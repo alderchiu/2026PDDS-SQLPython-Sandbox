@@ -21,9 +21,11 @@ if not os.path.exists(DB_PATH):
 
 # ==============================================================================
 # STEP 2: Connect to SQLite Database
+# Create a connection to the database file and a cursor for executing SQL.
 # ==============================================================================
 
-
+conn = sqlite3.connect(DB_PATH)
+cursor = conn.cursor()
 
 # ==============================================================================
 # STEP 3: Task & Try
@@ -36,13 +38,14 @@ TODO:   Write a SQL query to count the total number of flights in the Flights ta
 
 # Type your SQL query below
 sql_task_1 = """
-
+SELECT COUNT(*)
+FROM Flight;
 """
 
 # Execute SQL query and fetch the result
 
-# Replace this with the code to execute the query and fetch the result
-result_task_1 = None
+cursor.execute(sql_task_1)
+result_task_1 = cursor.fetchone()[0]
 
 print("Task 1: Total Flight Count")
 print(f"Total number of flights: {result_task_1}")
@@ -56,21 +59,26 @@ TODO:   Modify the SQL query below to show:
 """
 
 # Type your SQL query below
-sql_task_2 = """
-
+sql_task_2 = """  SELECT origin, COUNT(*) as flight_count, ROUND(AVG(fare), 2) as average_fare
+                    FROM Flight
+                    GROUP BY origin
+                        ORDER BY flight_count DESC;
 """
 # Execute SQL query and fetch the result
+cursor.execute(sql_task_2)
+
 
 # Replace this with the code to execute the query and fetch the result
-result_task_2 = None
+result_task_2 = cursor.fetchall()
 
 print("Task 2: Flight Summary by Origin City")
-print("Origin City | Flight Count | Average Fare")
-# Print all the results
+print(f"{'Origin City':<15} | {'Flight Count':<12} | {'Average Fare':>12}")
+for origin, flight_count, average_fare in result_task_2:
+    print(f"{origin:<15} | {flight_count:<12} | {average_fare:>12.2f}")
 
 # Expected Output:
-# Origin City | Flight Count | Average Fare
-# Los Angeles | 8 | 475.59
+# Origin City     | Flight Count | Average Fare
+# Los Angeles     | 8            |       475.59
 # ...
 
 """
@@ -80,18 +88,23 @@ TODO:   Find which aircraft model is used for each flight from Madison.
 
 # Type your SQL query below
 sql_task_3 = """
-
+SELECT Flight.flno, Flight.destination, Aircraft.mname, Aircraft.model, Flight.fare
+FROM Flight
+JOIN Aircraft ON Flight.aid = Aircraft.aid
+WHERE Flight.origin = 'Madison';
 """
 
 # Execute SQL query and fetch the result
+cursor.execute(sql_task_3)
 
 # Replace this with the code to execute the query and fetch the result
-result_task_3 = None
+result_task_3 = cursor.fetchall()
 
 print("Task 3: Join Flight with Aircraft")
 print("Flight Number | Destination | Aircraft Name | Aircraft Model | Fare")
 # Print all the results
-
+for flno, destination, mname, model, fare in result_task_3:
+    print(f"{flno:<14} | {destination:<11} | {mname:<13} | {model:<14} | {fare:.2f}")
 # Expected Output:
 # Flight Number | Destination | Aircraft Name | Aircraft Model | Fare
 # 4884 | Chicago | Piper | Archer III | 112.45
@@ -100,3 +113,5 @@ print("Flight Number | Destination | Aircraft Name | Aircraft Model | Fare")
 # ==============================================================================
 # STEP 4: Close Database Connection
 # ==============================================================================
+cursor.close()
+conn.close()
